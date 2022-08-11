@@ -1,0 +1,33 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres_username"
+      POSTGRES_PASSWORD: "postgres_password"
+      POSTGRES_DB: "postgress_db_name"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-U", "postgres_username"]
+      # the number of seconds to initially wait before executing the health check
+      interval: 3s
+      # the number of seconds Docker awaits for your health check command to return an exit code before declaring it as failed
+      timeout: 30s
+      retries: 5
+      # number of seconds the container needs to start on average
+      start_period: 3s
+  java-spring-template:
+    image: java-spring-template:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - spring.profiles.active=dev-docker
+      - NEW_RELIC_AGENT_ENABLED=false
+      - NEW_RELIC_APP_NAME=java-spring-template (local dev)
+      - NEW_RELIC_LICENSE_KEY=
+      - NEW_RELIC_APPLICATION_LOGGING_ENABLED=false
+      - NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED=false
+    depends_on:
+      postgres:
+        condition: service_healthy

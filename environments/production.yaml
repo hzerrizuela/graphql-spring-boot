@@ -1,0 +1,250 @@
+## ACV's HTTP API Helm Chart
+## A helm chart for installing basic http based applications to Kubernetes clusters.
+##
+## Documentation on this chart, including configuration details and installation
+## instructions, can be found:
+## https://github.com/acv-auctions/charts-server/blob/master/charts/http-api/README.md
+
+## Metadata about the application
+meta:
+  provider: aws
+  region: us-east-1
+  clusterName: production
+  name: SERVICE_NAME
+  namespace: NAMESPACE
+  environment: production
+  owner: OWNER
+
+
+## Application container image configuration
+image:
+  ## Docker image repository path in Amazon ECR
+  repository: 294290347293.dkr.ecr.us-east-1.amazonaws.com/SERVICE_NAME
+
+  ## This should get set dymanically at deployment time
+  ## i.e. helm upgrade ... --set image.tag=<value>
+  tag: latest
+
+  ## (Optional) ImagePullPolicy - how often kubernetes should pull the container image
+  ##   IfNotPresent - (default) only if the host machine does not already have the image
+  ##   Always       - host machine will always pull the image on application startup
+  pullPolicy: IfNotPresent
+
+
+## Number of static replicas to create
+## This will only be set if Horizontal Pod Autoscaling is not being used
+replicaCount: 2
+
+
+## (Optional) Container Startup
+## Only set if you intend to override the default startup behavior of your containerized application.
+## https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+##
+## Overrides the `ENTRYPOINT` of your docker container
+entrypoint: []
+  # - "/bin/sh"
+
+## Overrides the `CMD` of your docker container. Args that are passed to the entrypoint
+cmd: []
+  # - "-c"
+  # - "sleep 10"
+
+
+## Ports
+##
+## The port your application's http server runs on
+httpPort: 8080
+
+## By default we expose http://<meta.name>.<meta.namespace>.svc.cluster.local:80
+## to the cluster. This will forward traffic from port 80 to the `httpPort` on your container
+## specified above. You can add additional port mappings to this list to expose
+## various ports to the cluster and forward to the appropriate port in the container.
+additionalPortMappings: []
+  # - name: https
+  #   port: 443
+  #   targetPort: 4200
+
+
+## Compute resources to apply to your container
+##
+## By default, resources requests == limits. This is to provide the best level of
+## reliability for our clusters and services running on them. We do allow for deviation
+## to cpu resources only.
+##
+## Please Note: Setting your requests == limits, your resources will be "Guaranteed".
+## In setting cpu limits > requests, your application will become "Burstable" and will only
+## be guaranteed the requests specified. When many applications on a node are in a
+## "Burstable" state, it can create a nosiy neighbor effect, slowing down everything on the node.
+## https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/
+resources:
+  requests: {}
+    # cpu: 250m
+
+  limits:
+    cpu: 1500m
+    memory: 1Gi
+    ephemeral-storage: 256Mi
+
+
+## Environment variables to inject into your container image
+environment: []
+  # - name: EXAMPLE_VAR
+  #   value: example_value
+
+
+## Vault secrets to mount into your running container
+vaultSecrets: []
+  # - secretPath: team/environment/cluster_name/namespace/secret_name_1
+  #   mountPath: /app/secrets
+
+  # - secretPath: team/environment/cluster_name/namespace/secret_name_2
+  #   mountPath: /secrets
+  #   convertToFiles: true
+  #   permissions: "0400"
+
+
+## Kubernetes uses readiness probes to determine your application is ready to
+## start serving traffic. More on readiness probes can be seen here:
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes
+readinessProbe:
+  ## Path to health endpoint i.e. "/health"
+  path: /actuator/health/readiness
+
+  ## (Optional) HTTP headers to include in the probe requests from K8s
+  # httpHeaders:
+  #   - name: Custom-Header
+  #     value: Awesome
+
+  ## Additional probe configuration
+  # initialDelaySeconds: 0
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  # failureThreshold: 3
+
+
+## Kubernetes uses this endpoint to determine when your container needs to be
+## restarted. More on liveness probes can be seen here:
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  ## Path to health endpoint i.e. "/health"
+  path: /actuator/health/liveness
+
+  ## (Optional) HTTP headers to include in the probe requests from K8s
+  # httpHeaders:
+  #   - name: Custom-Header
+  #     value: Awesome
+
+  ## Additional probe configuration
+  # initialDelaySeconds: 0
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  # failureThreshold: 3
+
+
+## (Optional) Kubernetes uses this probe to determin the application has started.
+## The is best for applications with long startup times. More on startup probes can be seen here:
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+startupProbe:
+  ## Path to health endpoint i.e. "/health"
+  path: /actuator/health/liveness
+
+  ## (Optional) HTTP headers to include in the probe requests from K8s
+  # httpHeaders:
+  #   - name: Custom-Header
+  #     value: Awesome
+
+  ## Additional probe configuration
+  # initialDelaySeconds: 0
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  failureThreshold: 6
+
+
+## Default upgrade strategy is RollingUpdate
+rollingUpdate:
+  ## The number, or percentage of pods that can be unavailable during an upgrade operation
+  maxUnavailable: 0
+
+  ## The number, or percentage of pods to spin up with the new version at a time during an upgrade operation
+  maxSurge: 1
+
+
+## Additional labels to apply to all components in the helm chart
+additionalLabels: {}
+  # test: value
+
+
+## Exposing your API over a DNS CNAME
+ingress:
+  enabled: true
+
+  ## Determins how traffic is exposed to the public
+  ##   external - Completely exposed to the public
+  ##   internal - Exposed to known ACV sources (i.e. VPN, Jenkins, etc.)
+  ingressClass: INGRESS_EXPOSURE
+
+  ## Hostname to expose traffic over
+  host: HOSTNAME
+
+  ## Sets the "nginx.ingress.kubernetes.io/proxy-body-size" annotation
+  ## Configures `client_max_body_size` nginx parameter
+  proxyBodySize: "50m"
+
+  ## Additional annotations to add to an ingress rule
+  additionalAnnotations: {}
+    # nginx.ingress.kubernetes.io/test: "50m"
+
+
+## Kubernetes Default Horizontal Pod Autoscaling
+## Scaling your deployment based on cpu and/or memory utilization
+## https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+hpa:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 3
+  # targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+
+## Kubernetes Custom Horizontal Pod Autoscaling
+## Scaling your deployment based on custom metrics from Prometheus
+## https://keda.sh/docs/1.4/scalers/prometheus/
+keda:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 3
+
+  ## Threshold to begin autoscaling
+  threshold: 100
+
+  ## The prometheus query to use to get autoscaling metrics
+  prometheusQuery: sum(rate(nginx_request_counter{exported_service="<namespace>-<name>"}[1m]))
+
+  ## (Optional) How frequently the metric will be polled and fed into the autoscaling system
+  # pollingInterval: 60
+
+  ## (Optional) How long the autoscaler will wait before scaling down after scaling up
+  # cooldownPeriod: 90
+
+
+## Configuration for pod scheduling and asssignment
+## https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+## Opt out of scheduling to node groups using spot instances, which are much more cost effective
+## than on demand nodes. By scheduling to spot instances, your application pods can be
+## evicted to another node as cheaper nodes are swapped into the cluster.
+optOutOfSpotInstances: false
+
+## Schedule pods to nodes labeled with the following key/value pairs
+scheduleToNodesWithLabels: []
+  # - key: dedicated
+  #   value: machine-learning
+
+## Which taints on nodes to schedule through for pod scheduling and assignment
+## https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: []
+  # - key: dedicated
+  #   value: machine-learning
