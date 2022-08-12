@@ -8,19 +8,15 @@ import lombok.Setter;
 @Setter
 public class SubjectResponse {
 
-  private long id;
+	private Long id;
+	
+	private String subjectName;
 
-  private String subjectName;
-
-  private Double marksObtained;
-
-  private Subject subject; // this is for internal use only
-
-  public SubjectResponse(Subject subject) {
-    this.subject = subject;
-
-    this.id = subject.getId();
-    this.subjectName = subject.getSubjectName();
-    this.marksObtained = subject.getMarksObtained();
-  }
+	private Double marksObtained;
+	
+	public SubjectResponse (Subject subject) {
+		this.id = subject.getId();
+		this.subjectName = subject.getSubjectName();
+		this.marksObtained = subject.getMarksObtained();
+	}
 }

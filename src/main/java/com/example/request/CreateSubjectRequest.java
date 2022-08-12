@@ -3,11 +3,11 @@ package com.example.request;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class CreateSubjectRequest {
 
-  private String subjectName;
-  private Double marksObtained;
-
+	private String subjectName;
+	
+	private Double marksObtained;
 }

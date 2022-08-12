@@ -5,28 +5,30 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.persistence.Table;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
-@NoArgsConstructor
+@Table(name = "address")
 public class Address {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column
-  private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private Long id;
 
-  @Column
-  private String street;
+	@Column(name = "street")
+	private String street;
 
-  @Column
-  private String number;
-
-  @Column
-  private String city;
+	@Column(name = "city")
+	private String city;
+	
+	@OneToOne(mappedBy = "address")
+	private Student student;
 
 }

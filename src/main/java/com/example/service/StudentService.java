@@ -11,6 +11,7 @@ import com.example.request.CreateSubjectRequest;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentService {
@@ -23,22 +24,21 @@ public class StudentService {
     return studentRepository.findById(id).get();
   }
 
+  @Transactional
   public Student createStudent(CreateStudentRequest createStudentRequest) {
     Student student = new Student(createStudentRequest);
 
     Address address = new Address();
     address.setStreet(createStudentRequest.getStreet());
     address.setCity(createStudentRequest.getCity());
-
-    address = addressRepository.save(address);
+//    address = addressRepository.save(address);
     student.setAddress(address);
-    student = studentRepository.save(student);
 
     List<Subject> subjectsList = new ArrayList<>();
 
     if (createStudentRequest.getSubjectsLearning() != null) {
       for (CreateSubjectRequest createSubjectRequest : createStudentRequest.getSubjectsLearning()) {
-        var subject = new Subject();
+        Subject subject = new Subject();
         subject.setSubjectName(createSubjectRequest.getSubjectName());
         subject.setMarksObtained(createSubjectRequest.getMarksObtained());
         subject.setStudent(student);
@@ -46,9 +46,10 @@ public class StudentService {
         subjectsList.add(subject);
       }
 
-      subjectRepository.saveAll(subjectsList);
+//      subjectRepository.saveAll(subjectsList);
     }
     student.setLearningSubjects(subjectsList);
-    return student;
+
+    return studentRepository.save(student);
   }
 }

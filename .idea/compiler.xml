@@ -7,7 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="GraphQL-With-SpringBoot" />
+        <module name="graphql-spring-boot" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.6">
@@ -17,6 +17,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="GraphQL-With-SpringBoot" options="-parameters" />
+      <module name="graphql-spring-boot" options="-parameters" />
       <module name="java-spring-template" options="-parameters" />
     </option>
   </component>

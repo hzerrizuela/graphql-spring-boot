@@ -7,9 +7,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan({"com.example.mutation", "com.example.query", "com.example.service", "com.example.resolver"})
-@EntityScan({"com.example.entity"})
-@EnableJpaRepositories({"com.example.repository"})
+@ComponentScan({"com.example.query", "com.example.service",
+	"com.example.resolver", "com.example.mutation"})
+@EntityScan("com.example.entity")
+@EnableJpaRepositories("com.example.repository")
 public class GraphQLWithSpringBootApplication {
 
   public static void main(String[] args) {
